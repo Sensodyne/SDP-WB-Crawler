@@ -1,24 +1,24 @@
 import csv
 import json
-from search_class import search_with_user_data
+from search_class import newsSearch
 
-def google_search_word_input(path):
-    search_word_list = []
+# def google_search_word_input(path):
+#     search_word_list = []
 
-    with open(path,newline='', encoding='UTF-8') as swinput:
-        reader = csv.reader(swinput)
-        for row in reader:
-            search_word_list.append(row[0])
-    return search_word_list
+#     with open(path,newline='', encoding='UTF-8') as swinput:
+#         reader = csv.reader(swinput)
+#         for row in reader:
+#             search_word_list.append(row[0])
+#     return search_word_list
 
-def word_set_input(path):
-    word_set_list = []
+# def word_set_input(path):
+#     word_set_list = []
 
-    with open(path,newline='', encoding='UTF-8') as swinput:
-        reader = csv.reader(swinput)
-        for row in reader:
-            word_set_list.append(row[0])
-    return word_set_list
+#     with open(path,newline='', encoding='UTF-8') as swinput:
+#         reader = csv.reader(swinput)
+#         for row in reader:
+#             word_set_list.append(row[0])
+#     return word_set_list
 
 
 
@@ -31,11 +31,10 @@ if __name__=='__main__':
     with open(userData_path, "r", encoding = "UTF-8") as clientJson :
         userData_loaded = json.load(clientJson)
 
-    temp = search_with_user_data(path = './chromedriver',
-        user = userData_loaded,
-        company = "TTM")
+    temp = newsSearch(path = './chromedriver',
+        user = userData_loaded)
 
-    temp.go_crawl("Annual")
+    temp.go_crawl()
 
     #input_path = './crawler_input.xlsx'
     #get_input_excel(input_path)

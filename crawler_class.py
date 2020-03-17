@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-import json
 from multiprocessing import Pool
 import csv
 #from bert_serving.client import BertClient
@@ -11,86 +10,100 @@ import csv
 #from nltk.corpus import stopwords
 #import nltk
 
-class newsSearch:
-    # enter the news sites and search the keyword
-    def __init__(self, path, user):  # (self, path, user, webSite, loginTags)
+class GoogleCrawler:
+    # date_min and date_min gets formatted string such as m/d/yyyy
+    def __init__(self,path,word_set,date_min,date_max,page_limit):
         self.path = path
-        self.user = user
+        self.word_set = word_set
+        self.date_min = date_min
+        self.date_max = date_max
+        self.page_limit = page_limit
 
-    def login(self, driver):
-        # gain access to the website with userInfo
-        email = self.user["email"]
-        password = self.user["password"]
-
-        loginLink = driver.find_Element_by_id("SIGN-IN")
-        time.sleep(0.5)
-
-        emailLink = driver.find_element_by_id("lg_id") #emailTag
-        emailLink.send_keys(email)
-
-        # click
-        time.sleep(0.5)
-
-        passwordLink = driver.find_element_by_id("lg_password") #passwordTag
-        passwordLink.send_keys(password)
-
-        # click
-        time.sleep(0.5)
-
-        access = driver.find_element_by_id("submitLoginFormBtn")
-        access.click()
+    def date_limit(self,driver):
+        # select date option
+        tool = driver.find_element_by_id('hdtb-tls')
+        tool.click()
 
         time.sleep(0.5)
 
+        date = driver.find_element_by_xpath("//div[@aria-label='모든 날짜']")
+        #print(date)
+        date.click()
 
-    def go_crawl(self):
-        #loading chrome driver
+        time.sleep(0.5)
+
+        date_option = driver.find_element_by_id("cdr_opt")
+        date_option.click()
+
+        time.sleep(0.5)
+
+        # input date min and max
+        date_min_input = driver.find_elements_by_xpath("//*[@class='ktf mini cdr_mm cdr_min']")
+        date_min_input[1].send_keys(self.date_min)
+        date_max_input = driver.find_elements_by_xpath("//*[@class='ktf mini cdr_mm cdr_max']")
+        date_max_input[1].send_keys(self.date_max)
+        date_enter = driver.find_elements_by_xpath("//*[@class='ksb mini cdr_go']")
+        date_enter[1].click()
+
+        time.sleep(1)
+    
+    #one to one word comparison, the possibility of replacement exists.
+    def word_searcher(self,document):
+        count = [x*0 for x in range(len(self.word_set))]
+        document_word_list = document.split(' ')
+        for i in range(len(self.word_set)):
+            word = self.word_set[i]
+            for doc_word in document_word_list:
+                if doc_word == word:
+                    count[i] = count[i]+1
+        
+        return count
+
+    '''def word_searcher(self, document):
+    
+        stop_words = set(stopwords.words())
+        count = [x * 0 for x in range(len(self.word_set))]
+        document_word_list = document.split(' ')
+        bc = BertClient(port_out=5560,port=5559)
+        for i in range(len(self.word_set)):
+            word = self.word_set[i]
+            vec_word = bc.encode([word])
+            for doc_word in document_word_list:
+                if len(doc_word)<3:
+                    continue
+                vec_doc_word = bc.encode([doc_word])
+                if not doc_word in stop_words:    
+                    if cosine_similarity(vec_word, vec_doc_word)>0.93:
+                        print(word,doc_word,cosine_similarity(vec_word, vec_doc_word))
+                        count[i] = count[i] + 1
+        return count'''
+
+    def csv_out(self,keyword,title,link,count):
+        count_str = ''.join(str(e) for e in count)
+        with open(keyword+'.csv','a',newline='', encoding='utf-8-sig') as csvfile:
+            out_writer = csv.writer(csvfile)
+            out_writer.writerow([title,link,count_str])
+
+    def go_crawl(self,search_keyword):
+        #nltk.download('stopwords') 
+        # loading chrome driver
         driver = webdriver.Chrome(self.path)
         driver.implicitly_wait(3)
 
-        # enter the website
-        driver.get("https://economictimes.indiatimes.com/")
+        # enter the google
+        driver.get('https://www.google.com')
+
+        # search the keywords 
+        search_box = driver.find_element_by_name("q")
+        search_box.send_keys(search_keyword)
+        search_box.submit()
         driver.implicitly_wait(3)
 
-        # log in
-        self.login(driver)
+        self.date_limit(driver) #######
 
-        # search keywords
-        try:
-            navigator = driver.find_element_by_link_text("Toggle navigation")
-            navigator.click()
-        except:
-            pass
+        link_list = []
+        count_list = []
 
-        search = driver.find_element_by_xpath("/html/body/app-root/user-logged-in-home/app-header-main/header/div/div/div[2]/div/app-search/div/div[1]/input")
-        search.send_keys(self.company)
-        showresult = driver.find_element_by_id("searchSubmitBtn")
-        showresult.click()
-
-        time.sleep(0.5)
-
-        searchresult = driver.find_elements_by_partial_link_text("NYSE")
-
-        # get articles based on html tag
-
-
-class text_parser:
-    def __init__(self, driver):
-        self.driver = driver
-    
-    def TextExtractor(driver):
-    element = self.driver.find_element_by_class_name('Normal')
-    text = element.txt
-    if text = None:
-        text = element.get_attribute("value")
-        if text = None:
-            text = element.get_attribute("innerHTML")
-    return text
-
-
-
-
-"""
         # 1,2페이지 검색
         for search_count in range(1,self.page_limit+1):
 
@@ -153,4 +166,3 @@ class text_parser:
         print("crawling ended")
         #time.sleep(10)
         #driver.quit()
-"""
