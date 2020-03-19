@@ -59,25 +59,26 @@ class newsSearch:
         driver.implicitly_wait(3)
 
         # enter the website
-        driver.get("https://renewablesnow.com/news/albania-calls-tender-for-privatisation-of-hydro-power-co-ulez-shkopet-315184/")
+        driver.get("https://economictimes.indiatimes.com/")
         driver.implicitly_wait(3)
-        ext = self.textExtractor(driver)
-        print(ext)
 
-        # # log in
-        # self.login(driver)
+        # log in
+        self.login(driver)
 
-        # # search keywords
-        # search = driver.find_element_by_name('ticker')
-        # search.send_keys('india ppp')
-        # showresult = driver.find_element_by_class_name("searchIcon")
-        # showresult.click()
+        # search keywords
+        search = driver.find_element_by_name('ticker')
+        search.send_keys('india ppp')
+        showresult = driver.find_element_by_class_name("searchIcon")
+        showresult.click()
 
-        # driver.implicitly_wait(1)
+        driver.implicitly_wait(1)
 
-        # searchresult = driver.find_element_by_xpath('//*[@id="leftContainer"]/div[2]/a')
-        # searchresult.click()
-        # driver.implicitly_wait(3)
+        searchresult = driver.find_element_by_xpath('//*[@id="leftContainer"]/div[2]/a')
+        searchresult.click()
+        driver.implicitly_wait(3)
+
+        # ext = self.textExtractor(driver)
+        # print(ext)
 
         # get articles based on html tag
 
