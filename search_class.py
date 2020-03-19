@@ -83,7 +83,7 @@ class newsSearch:
 
 
     def textExtractor(self, driver):
-        element = driver.find_element_by_class_name('Normal')
+        element = driver.find_element_by_class_name('content-description')
         text = element.text
         if text == None:
             text = element.get_attribute("value")
